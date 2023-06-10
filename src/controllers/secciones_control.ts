@@ -1,5 +1,6 @@
 import {Request, Response, json} from 'express';
 import { Seccion } from '../models/seccion';
+import { acordesSeccionctrl } from './acordesSeccion_control';
 var pool = require('../db').pool;
 
 class secciones_control{
@@ -10,20 +11,36 @@ ObtenerSeccionesCancion(idCancion:number):Promise<Seccion[]>{
            
             const resultado: Array<Seccion> = new Array<Seccion>();
 
-            const query = `SELECT s.letra, ts.nombre tipoSeccion FROM secciones s
+            const query = `SELECT s.id, s.letra, ts.nombre tipoSeccion FROM secciones s
                            INNER JOIN tipo_seccion ts ON ts.id = s.idTipoSeccion
                            WHERE idCancion = ?`; 
             
+            const seccion = new Seccion();
+
             pool.getConnection(function(error, connection) {
                 
-                connection.query(query, idCancion, function (error, fields) {
+                connection.query(query, idCancion, async function (error, fields) {
                     connection.release();
+
                     // Recorremos los campos obtenidos y los insertamos 
                     // dentro de un array de secciones para retornarla luego
                     for (let i = 0; i < fields.length; i++) {
-                        console.log(fields[i])
-                        resultado.push(new Seccion(fields[i]));
+                        console.log(fields)
+
+                        //#region CARGA DE OBJETO
+                            seccion.id = fields[i].id;
+                            seccion.idTipoSeccion = fields[i].idTipoSeccion;
+                            seccion.letra = fields[i].letra;
+
+                            // Obtenemos las secciones de la cancion
+                            console.log(fields[i].id)
+                            seccion.acordes = await acordesSeccionctrl.ObtenerAcordesSeccion(parseInt(fields[i].id));
+                        //#endregion
+
+                        resultado.push(seccion);
                     }
+
+                    
                     resolve(resultado)
                 });
             });

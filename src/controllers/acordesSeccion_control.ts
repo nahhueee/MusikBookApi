@@ -1,5 +1,5 @@
 import {Request, Response, json} from 'express';
-import { Acorde_Seccion } from 'models/acorde_seccion';
+import { Acorde_Seccion } from '../models/acorde_seccion';
 var pool = require('../db').pool;
 
 class acordeSeccion_control{
@@ -10,13 +10,14 @@ ObtenerAcordesSeccion(idSeccion:number):Promise<Acorde_Seccion[]>{
            
             const resultado: Array<Acorde_Seccion> = new Array<Acorde_Seccion>();
 
-            const query = `SELECT acorde, ubicacion
+            const query = `SELECT acorde, ubicacion FROM acordes_seccion
                            WHERE idSeccion = ?`; 
             
             pool.getConnection(function(error, connection) {
                 
                 connection.query(query, idSeccion, function (error, fields) {
                     connection.release();
+                    console.log(idSeccion, fields)
                     // Recorremos los campos obtenidos y los insertamos 
                     // dentro de un array de acordes_seccion para retornarla luego
                     for (let i = 0; i < fields.length; i++) {
@@ -59,10 +60,10 @@ ObtenerAcordesSeccion(idSeccion:number):Promise<Acorde_Seccion[]>{
 
     Modificar(req:Request, res:Response){
         try {
-            const seccion = req.body;
-            let parametros:any = [seccion.idCancion, seccion.idTipoSeccion, seccion.letra, seccion.id];
-            const query = ` UPDATE secciones SET idCancion = ?, idTipoSeccion = ?, letra = ?
-                            WHERE id = ? `
+            const acorde = req.body;
+            let parametros:any = [acorde.acorde, acorde.ubicacion, acorde.idSeccion];
+            const query = ` UPDATE acordes_seccion SET acorde = ?
+                            WHERE ubicacion = ? AND idSeccion = ? `
 
             pool.getConnection(function(error, connection) {
                 
