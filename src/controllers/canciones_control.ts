@@ -9,10 +9,10 @@ class canciones_control{
     async ObtenerTotalCanciones(req:Request,res:Response){
         try {
             //Obtengo los datos de paginacion y filtros
-            const filtroTabla = req.body; 
+            const filtrosCancion = req.body; 
 
             //Armo la query
-            const query = await ObtenerQuery(filtroTabla, true);    
+            const query = await ObtenerQuery(filtrosCancion, true);    
         
             pool.getConnection(function(error,connection) {
                         
@@ -33,10 +33,10 @@ class canciones_control{
     async ObtenerCanciones(req:Request, res:Response){
         try {
             //Obtengo los datos de paginacion y filtros
-            const filtroTabla = req.body; 
+            const filtrosCancion = req.body; 
 
             //Armo la query
-            const query = await ObtenerQuery(filtroTabla, false);
+            const query = await ObtenerQuery(filtrosCancion, false);
                 
             pool.getConnection(function(error, connection) {
                 
@@ -206,24 +206,26 @@ class canciones_control{
 //#region FUNCIONES PRIVADAS
 
 // Obtiene una query de canciones y el total de registros si se requiere / Usado para paginación
-function ObtenerQuery(filtroTabla:any, estotal:boolean):Promise<string>{
+function ObtenerQuery(filtrosCancion:any, estotal:boolean):Promise<string>{
     return new Promise((resolve, rejects)=>{
         let query:string= '';
         let paginacion='';
         let filtro='';
         
-        if(filtroTabla.filtro!="")
-            filtro = " WHERE nombre LIKE '%" + filtroTabla.filtro + "%'";
+        if(filtrosCancion.nombre!="")
+            filtro = " AND nombre LIKE '%" + filtrosCancion.nombre + "%'";
 
         if(!estotal)
-           paginacion = " LIMIT "+ filtroTabla.tamanioPagina + " OFFSET " + ((filtroTabla.pagina - 1) * filtroTabla.tamanioPagina);
+           paginacion = " LIMIT "+ filtrosCancion.paginacion.tamanioPagina + " OFFSET " + ((filtrosCancion.paginacion.pagina - 1) * filtrosCancion.paginacion.tamanioPagina);
 
         let count = estotal ? "SELECT COUNT (*) AS total FROM ( " : "";
         let endCount = estotal ? " ) as subquery" : "";
         
         query = count + 
-                ` SELECT * from canciones `
-                + filtro //WHERE
+                ` SELECT * from canciones 
+                  WHERE idTipoCancion = `
+                + filtrosCancion.tipo
+                + filtro //AND filtro nombre
                 + ` ORDER BY id DESC `
                 + paginacion //LIMIT
                 + endCount;         
