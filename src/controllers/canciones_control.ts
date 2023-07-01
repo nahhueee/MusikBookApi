@@ -95,7 +95,40 @@ class canciones_control{
         }
     }
 
-    //#region ABM
+    ExisteCancion(req:Request, res:Response){
+        try {
+            // Recibimos los datos de la cancion a buscar existencia
+            const cancion = req.body;
+            let parametros:any = [cancion.nombre, cancion.idTipoCancion];
+
+            // Creamos la query
+            const query = `SELECT id FROM canciones WHERE nombre = ? AND idTipoCancion = ?`; 
+            
+            pool.getConnection(function(error, connection) {
+                
+                connection.query(query, parametros, async function (error, fields) {
+                    connection.release();
+            
+                    // Handle error after the release.
+                    if (error) 
+                        HandlearError(req,res,"db",error);
+                    
+                    if(fields.length>0){
+                        res.json("Existe")
+                    }else{
+                        res.json("NoExiste")
+                    }
+                    
+                });
+            });
+            
+        } catch (error:any) {
+            console.log(error)
+            HandlearError(req,res,"interno",error);
+        }
+    }
+//#endregion
+//#region ABM
     Agregar(req:Request, res:Response){
         try {
             const cancion = req.body;
@@ -104,14 +137,22 @@ class canciones_control{
 
             pool.getConnection(function(error, connection) {
                 
-                connection.query(query, parametros, function (error, fields) {
+                connection.query(query, parametros, async function (error, fields) {
                     connection.release();
             
                     // Handle error after the release.
                     if (error) 
                         HandlearError(req,res,"db",error);
+
+                    //Obtiene y devuelve el último id insertado
+                    const idCancion = await ObtenerUltimaCancion();
                     
-                    res.json('OK');
+                    if(idCancion!=-1){
+                        res.json(idCancion);
+                    }else{
+                        HandlearError(req,res,"db","No se logró obtener el último id");
+                    }
+                        
                 });
             });
         } catch (error:any) {
@@ -171,7 +212,7 @@ class canciones_control{
                         //#endregion
                         
                         let query = `DELETE FROM canciones
-                                     WHERE id = ? `;
+                                        WHERE id = ? `;
                         connection.query(query, data.cancion, function (error, fields) {
                             if (error) {//ERROR EN QUERY (Rollback y Liberar conexion)
                                 connection.rollback(function() {
@@ -204,6 +245,32 @@ class canciones_control{
 }
 
 //#region FUNCIONES PRIVADAS
+// Obtiene la última canción agregada
+function ObtenerUltimaCancion():Promise<number>{
+    return new Promise((resolve, rejects)=>{
+        try {
+            // Creamos la query
+            const query = `SELECT id FROM canciones ORDER BY id DESC LIMIT 1`; 
+            
+            pool.getConnection(function(error, connection) {
+                
+                connection.query(query, function (error, fields) {
+                    connection.release();
+            
+                    // Handle error after the release.
+                    if (error) 
+                        rejects(-1);
+                    
+                        resolve(fields[0].id);
+                });
+            });
+            
+        } catch (error:any) {
+            console.log(error)
+            rejects(-1);
+        }
+    })
+}
 
 // Obtiene una query de canciones y el total de registros si se requiere / Usado para paginación
 function ObtenerQuery(filtrosCancion:any, estotal:boolean):Promise<string>{

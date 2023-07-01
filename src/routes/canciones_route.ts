@@ -5,7 +5,9 @@ const router : Router  = Router();
 
 router.post('/total', cancionesctrl.ObtenerTotalCanciones);
 router.post('/', cancionesctrl.ObtenerCanciones);
+
 router.get('/:cancion', cancionesctrl.ObtenerCancion);
+router.post('/existe', cancionesctrl.ExisteCancion);
 
 router.post('/agregar', cancionesctrl.Agregar);
 router.put('/modificar', cancionesctrl.Modificar);
