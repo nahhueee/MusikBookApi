@@ -1,6 +1,8 @@
 import {Request, Response} from 'express';
 import { Cancion } from '../models/cancion';
-import {seccionesctrl} from '../controllers/secciones_control';
+import { Seccion } from 'models/seccion';
+import { Acorde } from 'models/acorde';
+import { DetalleCancion } from 'models/detalle_cancion';
 
 var pool = require('../db').pool;
 
@@ -82,8 +84,12 @@ class canciones_control{
                     cancion.idTipoCancion = fields[0].idTipoCancion;
                     //#endregion    
                 
-                    // Obtenemos las secciones de la cancion
-                    cancion.secciones = await seccionesctrl.ObtenerSeccionesCancion(parseInt(idCancion));
+                    //Creamos el objeto detalle y lo llenamos con las secciones y acordes
+                    const detalle: DetalleCancion = new DetalleCancion();
+                    detalle.idCancion = cancion.id;
+
+                    detalle.secciones = await ObtenerSeccionesCancion(cancion.id);
+                    detalle.acordes = await ObtenerAcordesCancion(cancion.id);
 
                     res.json(cancion)
                 });
@@ -298,6 +304,73 @@ function ObtenerQuery(filtrosCancion:any, estotal:boolean):Promise<string>{
                 + endCount;         
         
         resolve(query);
+    })
+}
+
+// Obtiene las secciones de una cancion
+function ObtenerSeccionesCancion(idCancion):Promise<Array<Seccion>>{
+    return new Promise((resolve, rejects)=>{
+        let resultado: Array<Seccion> = new Array<Seccion>;
+
+        const query = `SELECT s.id, s.letra, ts.nombre tipoSeccion FROM secciones s
+                       INNER JOIN tipo_seccion ts ON ts.id = s.idTipoSeccion
+                       WHERE idCancion = ?`; 
+        
+        const seccion = new Seccion();
+
+        pool.getConnection(function(error, connection) {
+            
+            connection.query(query, idCancion, async function (error, fields) {
+                connection.release();
+
+                // Recorremos los campos obtenidos y los insertamos 
+                // dentro de un array de secciones para retornarla luego
+                for (let i = 0; i < fields.length; i++) {
+                    //#region CARGA DE OBJETO
+                        seccion.idCancion = fields[i].idcancion;
+                        seccion.idTipoSeccion = fields[i].idTipoSeccion;
+                        seccion.letra = fields[i].letra;
+                    //#endregion
+
+                    resultado.push(seccion);
+                }
+            });
+        });
+
+        resolve(resultado);
+    })
+}
+
+// Obtiene los acordes de una cancion
+function ObtenerAcordesCancion(idCancion):Promise<Array<Acorde>>{
+    return new Promise((resolve, rejects)=>{
+        let resultado: Array<Acorde> = new Array<Acorde>;
+
+        const query = `SELECT idCancion, acorde, ubicacion
+                       WHERE idCancion = ?`; 
+        
+        const acorde = new Acorde();
+
+        pool.getConnection(function(error, connection) {
+            
+            connection.query(query, idCancion, async function (error, fields) {
+                connection.release();
+
+                // Recorremos los campos obtenidos y los insertamos 
+                // dentro de un array de acordes para retornarla luego
+                for (let i = 0; i < fields.length; i++) {
+                    //#region CARGA DE OBJETO
+                        acorde.idCancion = fields[i].idcancion;
+                        acorde.acorde = fields[i].acorde;
+                        acorde.ubicacion = fields[i].ubicacion;
+                    //#endregion
+
+                    resultado.push(acorde);
+                }
+            });
+        });
+
+        resolve(resultado);
     })
 }
 

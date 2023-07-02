@@ -21,8 +21,8 @@ app.listen(app.get('port'), () => {
 import CancionesRuta from './routes/canciones_route';
 app.use('/api/canciones', CancionesRuta);
 
-import SeccionesRuta from './routes/secciones_route';
-app.use('/api/secciones', SeccionesRuta);
+// import SeccionesRuta from './routes/secciones_route';
+// app.use('/api/secciones', SeccionesRuta);
 
 import CategoriasRuta from './routes/categorias_route';
 app.use('/api/categorias', CategoriasRuta);

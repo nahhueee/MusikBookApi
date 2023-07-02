@@ -2,7 +2,6 @@ import {categoriasctrl} from '../controllers/categorias_control';
 import {Router} from 'express';
 const router : Router  = Router();
 
-
 router.post('/total', categoriasctrl.ObtenerTotalCategorias);
 router.post('/', categoriasctrl.ObtenerCategorias);
 

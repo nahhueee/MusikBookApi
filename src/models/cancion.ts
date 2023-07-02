@@ -1,4 +1,4 @@
-import { Seccion } from "./seccion";
+import { DetalleCancion } from "./detalle_cancion";
 
 export class Cancion{
     id? : number;
@@ -8,7 +8,7 @@ export class Cancion{
     idCategoria?: number;
     idTipoCancion?: number;
 
-    secciones: Array<Seccion> = new Array<Seccion>();
+    detalle: DetalleCancion = new DetalleCancion();
   
     constructor(data?: any) {
       if (data) {
@@ -18,8 +18,7 @@ export class Cancion{
         this.bpm = data.bpm;
         this.idCategoria = data.idCategoria;
         this.idTipoCancion = data.idTipoCancion;
-        // Si existen datos en data.secciones asignamos sus valores a nuestro array this.secciones, de lo contrario lo seteamos en nuevo
-        data.secciones ? this.secciones = data.secciones.map(x => new Seccion(x)) : this.secciones = new Array<Seccion>();
+        this.detalle = new DetalleCancion(data.detalle);
       }
     }
   }

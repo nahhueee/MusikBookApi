@@ -1,14 +1,13 @@
-export class Acorde_Seccion{
-    idSeccion? : number;
+export class Acorde{
+    idCancion? : number;
     acorde?: string;
-    ubicacion?: number;
+    ubicacion?: string;
     
     constructor(data?: any) {
       if (data) {
-        this.idSeccion = data.idSeccion;
+        this.idCancion = data.idCancion;
         this.acorde = data.acorde;
         this.ubicacion = data.ubicacion;
-       }
+      }
     }
   }
-  
