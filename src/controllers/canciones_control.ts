@@ -1,8 +1,8 @@
 import {Request, Response} from 'express';
 import { Cancion } from '../models/cancion';
-import { Seccion } from 'models/seccion';
-import { Acorde } from 'models/acorde';
-import { DetalleCancion } from 'models/detalle_cancion';
+import { Seccion } from '../models/seccion';
+import { Acorde } from '../models/acorde';
+import { DetalleCancion } from '../models/detalle_cancion';
 
 var pool = require('../db').pool;
 
